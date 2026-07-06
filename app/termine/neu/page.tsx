@@ -1,12 +1,45 @@
-import { SeitenKopf } from "@/components/ui";
+import { SeitenKopf, LeererZustand } from "@/components/ui";
+import { TerminForm } from "@/components/termin-form";
+import { ladeTerminOptionen } from "@/lib/auftrag-optionen";
+import { heuteDatumString } from "@/lib/format";
 
-export default function NeuerTerminSeite() {
+export const dynamic = "force-dynamic";
+
+export default async function NeuerTerminSeite({
+  searchParams,
+}: {
+  searchParams: Promise<{ auftrag?: string; datum?: string }>;
+}) {
+  const { auftrag, datum } = await searchParams;
+  const { auftraege, mitarbeiter } = await ladeTerminOptionen();
+
+  const vorausgewaehlt = auftraege.find((a) => a.id === auftrag);
+
   return (
-    <>
-      <SeitenKopf titel="Neuer Termin" zurueckHref="/" />
-      <p className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-10 text-center text-[15px] text-slate-500">
-        Die Terminplanung folgt in Phase 2.
-      </p>
-    </>
+    <div className="mx-auto max-w-xl">
+      <SeitenKopf titel="Neuer Termin" zurueckHref="/kalender" />
+      {auftraege.length === 0 ? (
+        <LeererZustand
+          hinweis="Für einen Termin brauchen Sie zuerst einen offenen Auftrag."
+          aktionLabel="Auftrag anlegen"
+          aktionHref="/auftraege/neu"
+        />
+      ) : (
+        <TerminForm
+          auftraege={auftraege}
+          mitarbeiter={mitarbeiter}
+          vorgabe={{
+            auftragId: vorausgewaehlt?.id ?? "",
+            datum: datum ?? heuteDatumString(),
+            startZeit: "08:00",
+            endZeit: "12:00",
+            mitarbeiterId: "",
+            ort: vorausgewaehlt?.kundeAdresse ?? "",
+            notiz: "",
+          }}
+          abbrechenHref="/kalender"
+        />
+      )}
+    </div>
   );
 }

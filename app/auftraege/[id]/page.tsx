@@ -92,22 +92,25 @@ export default async function AuftragDetailSeite({
             <Karte>
               <ul className="divide-y divide-slate-100">
                 {auftrag.termine.map((termin) => (
-                  <li key={termin.id} className="flex items-center gap-3 px-4 py-3 md:px-5">
-                    {termin.mitarbeiter && (
+                  <li key={termin.id}>
+                    <Link
+                      href={`/termine/${termin.id}`}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 md:px-5"
+                    >
                       <span
                         className="h-3 w-3 shrink-0 rounded-full"
-                        style={{ backgroundColor: termin.mitarbeiter.farbe }}
+                        style={{ backgroundColor: termin.mitarbeiter?.farbe ?? "#94a3b8" }}
                       />
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-[15px] font-semibold">
-                        {formatDatum(termin.datum)} · {termin.startZeit}–{termin.endZeit} Uhr
-                      </p>
-                      <p className="truncate text-sm text-slate-500">
-                        {termin.mitarbeiter?.name ?? "Kein Mitarbeiter"}
-                        {termin.ort ? ` · ${termin.ort}` : ""}
-                      </p>
-                    </div>
+                      <div className="min-w-0">
+                        <p className="text-[15px] font-semibold">
+                          {formatDatum(termin.datum)} · {termin.startZeit}–{termin.endZeit} Uhr
+                        </p>
+                        <p className="truncate text-sm text-slate-500">
+                          {termin.mitarbeiter?.name ?? "Kein Mitarbeiter"}
+                          {termin.ort ? ` · ${termin.ort}` : ""}
+                        </p>
+                      </div>
+                    </Link>
                   </li>
                 ))}
               </ul>

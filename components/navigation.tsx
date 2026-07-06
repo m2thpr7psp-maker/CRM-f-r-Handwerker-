@@ -17,6 +17,7 @@ const eintraege = [
   { href: "/auftraege", label: "Aufträge", icon: IconWerkzeug },
   { href: "/kunden", label: "Kunden", icon: IconPersonen },
   { href: "/rechnungen", label: "Rechnungen", icon: IconRechnung },
+  { href: "/mitarbeiter", label: "Mitarbeiter", icon: IconPersonen },
   { href: "/einstellungen", label: "Einstellungen", icon: IconZahnrad },
 ];
 

@@ -2,6 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auftragLoeschen } from "@/app/actions/auftraege";
+import { rechnungAusAuftragErzeugen } from "@/app/actions/rechnungen";
+import { formatWaehrung } from "@/lib/format";
+import { berechneSummen } from "@/lib/geld";
 import { SeitenKopf, Karte } from "@/components/ui";
 import { StatusWechsler } from "@/components/status-wechsler";
 import { LoeschenButton } from "@/components/loeschen-button";
@@ -22,6 +25,10 @@ export default async function AuftragDetailSeite({
       termine: {
         orderBy: [{ datum: "asc" }, { startZeit: "asc" }],
         include: { mitarbeiter: true },
+      },
+      rechnungen: {
+        orderBy: { nummer: "desc" },
+        include: { positionen: true },
       },
     },
   });
@@ -113,6 +120,49 @@ export default async function AuftragDetailSeite({
                     </Link>
                   </li>
                 ))}
+              </ul>
+            </Karte>
+          )}
+        </section>
+
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-lg font-bold">Rechnungsentwürfe</h2>
+            <form action={rechnungAusAuftragErzeugen.bind(null, auftrag.id)}>
+              <button
+                type="submit"
+                className="min-h-11 rounded-xl bg-orange-500 px-4 text-sm font-semibold text-white hover:bg-orange-600"
+              >
+                Rechnungsentwurf erzeugen
+              </button>
+            </form>
+          </div>
+          {auftrag.rechnungen.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-6 text-center text-[15px] text-slate-500">
+              Noch kein Rechnungsentwurf – mit einem Klick oben erzeugen.
+            </p>
+          ) : (
+            <Karte>
+              <ul className="divide-y divide-slate-100">
+                {auftrag.rechnungen.map((rechnung) => {
+                  const { brutto } = berechneSummen(rechnung.positionen, rechnung.mwstSatz);
+                  return (
+                    <li key={rechnung.id}>
+                      <Link
+                        href={`/rechnungen/${rechnung.id}`}
+                        className="flex min-h-14 items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50 md:px-5"
+                      >
+                        <div>
+                          <p className="text-[15px] font-semibold">{rechnung.nummer}</p>
+                          <p className="text-sm text-slate-500">
+                            vom {formatDatum(rechnung.datum)}
+                          </p>
+                        </div>
+                        <span className="text-[15px] font-bold">{formatWaehrung(brutto)}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </Karte>
           )}

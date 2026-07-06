@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Kunde {
+  id         String    @id @default(cuid())
+  name       String
+  firma      String?
+  strasse    String?
+  plz        String?
+  ort        String?
+  telefon    String?
+  email      String?
+  notizen    String?
+  erstelltAm DateTime  @default(now())
+  auftraege  Auftrag[]
+}
+
+model Auftrag {
+  id           String     @id @default(cuid())
+  kundeId      String
+  kunde        Kunde      @relation(fields: [kundeId], references: [id], onDelete: Cascade)
+  titel        String
+  beschreibung String?
+  status       String     @default("ANFRAGE")
+  erstelltAm   DateTime   @default(now())
+  termine      Termin[]
+  rechnungen   Rechnung[]
+}
+
+model Mitarbeiter {
+  id      String   @id @default(cuid())
+  name    String
+  farbe   String   @default("#2563eb")
+  termine Termin[]
+}
+
+model Termin {
+  id            String       @id @default(cuid())
+  auftragId     String
+  auftrag       Auftrag      @relation(fields: [auftragId], references: [id], onDelete: Cascade)
+  datum         DateTime
+  startZeit     String
+  endZeit       String
+  mitarbeiterId String?
+  mitarbeiter   Mitarbeiter? @relation(fields: [mitarbeiterId], references: [id], onDelete: SetNull)
+  ort           String?
+  notiz         String?
+}
+
+model Rechnung {
+  id               String              @id @default(cuid())
+  nummer           String              @unique
+  auftragId        String
+  auftrag          Auftrag             @relation(fields: [auftragId], references: [id], onDelete: Cascade)
+  datum            DateTime            @default(now())
+  leistungVon      DateTime?
+  leistungBis      DateTime?
+  mwstSatz         Float               @default(19)
+  zahlungszielTage Int                 @default(14)
+  positionen       RechnungsPosition[]
+}
+
+model RechnungsPosition {
+  id          String   @id @default(cuid())
+  rechnungId  String
+  rechnung    Rechnung @relation(fields: [rechnungId], references: [id], onDelete: Cascade)
+  bezeichnung String
+  menge       Float
+  einheit     String   @default("Std.")
+  einzelpreis Float
+  sortierung  Int      @default(0)
+}
+
+model Einstellungen {
+  id           Int     @id @default(1)
+  firmenname   String  @default("")
+  strasse      String  @default("")
+  plz          String  @default("")
+  ort          String  @default("")
+  steuernummer String  @default("")
+  ustIdNr      String  @default("")
+  iban         String  @default("")
+  logo         String?
+  stundensatz  Float   @default(55)
+}

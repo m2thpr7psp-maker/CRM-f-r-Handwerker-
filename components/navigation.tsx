@@ -7,12 +7,14 @@ import {
   IconKalender,
   IconPersonen,
   IconRechnung,
+  IconSuche,
   IconWerkzeug,
   IconZahnrad,
 } from "@/components/icons";
 
 const eintraege = [
   { href: "/", label: "Start", icon: IconHaus },
+  { href: "/suche", label: "Suche", icon: IconSuche },
   { href: "/kalender", label: "Kalender", icon: IconKalender },
   { href: "/auftraege", label: "Aufträge", icon: IconWerkzeug },
   { href: "/kunden", label: "Kunden", icon: IconPersonen },
@@ -21,9 +23,9 @@ const eintraege = [
   { href: "/einstellungen", label: "Einstellungen", icon: IconZahnrad },
 ];
 
-// Auf dem Smartphone passen 5 Einträge in die untere Leiste;
-// Einstellungen sind dort über das Dashboard erreichbar.
-const mobilEintraege = eintraege.slice(0, 5);
+// Auf dem Smartphone passen 5 Einträge in die untere Leiste; Suche,
+// Mitarbeiter und Einstellungen sind dort über das Dashboard erreichbar.
+const mobilEintraege = [eintraege[0], eintraege[2], eintraege[3], eintraege[4], eintraege[5]];
 
 function istAktiv(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";

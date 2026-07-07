@@ -4,7 +4,8 @@ import { Karte } from "@/components/ui";
 import { StatusBadge } from "@/components/status-badge";
 import { formatDatumLang, heuteDatum } from "@/lib/format";
 import { OFFENE_STATUS } from "@/lib/status";
-import { IconKalender, IconPersonen, IconPlus, IconWerkzeug } from "@/components/icons";
+import { IconKalender, IconPersonen, IconPlus, IconSuche, IconWerkzeug, IconZahnrad } from "@/components/icons";
+import { feldKlasse } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -29,10 +30,31 @@ export default async function DashboardSeite() {
 
   return (
     <>
-      <div className="mb-5">
-        <h1 className="text-2xl font-bold tracking-tight">Guten Tag!</h1>
-        <p className="text-[15px] text-slate-500">{formatDatumLang(heute)}</p>
+      <div className="mb-5 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Guten Tag!</h1>
+          <p className="text-[15px] text-slate-500">{formatDatumLang(heute)}</p>
+        </div>
+        <Link
+          href="/einstellungen"
+          className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 md:hidden"
+          aria-label="Einstellungen"
+        >
+          <IconZahnrad className="h-6 w-6" />
+        </Link>
       </div>
+
+      {/* Globale Suche */}
+      <form action="/suche" method="get" className="mb-5">
+        <div className="relative">
+          <IconSuche className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+          <input
+            name="q"
+            placeholder="Kunde oder Auftrag suchen …"
+            className={`${feldKlasse} pl-11`}
+          />
+        </div>
+      </form>
 
       {/* Schnellaktionen */}
       <div className="mb-6 grid grid-cols-3 gap-3">

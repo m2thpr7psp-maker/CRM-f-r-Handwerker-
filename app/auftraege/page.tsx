@@ -59,9 +59,9 @@ export default async function AuftraegeSeite({
             {auftraege.map((auftrag) => (
               <li
                 key={auftrag.id}
-                className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3 md:px-5"
+                className="flex flex-col gap-y-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-x-3 md:px-5"
               >
-                <Link href={`/auftraege/${auftrag.id}`} className="min-w-0 flex-1 py-1">
+                <Link href={`/auftraege/${auftrag.id}`} className="min-w-0 py-1 sm:flex-1">
                   <p className="truncate text-[15px] font-semibold hover:text-orange-600">
                     {auftrag.titel}
                   </p>
@@ -69,7 +69,9 @@ export default async function AuftraegeSeite({
                     {auftrag.kunde.name} · {formatDatum(auftrag.erstelltAm)}
                   </p>
                 </Link>
-                <StatusWechsler auftragId={auftrag.id} status={auftrag.status} />
+                <div className="self-start sm:self-auto">
+                  <StatusWechsler auftragId={auftrag.id} status={auftrag.status} />
+                </div>
               </li>
             ))}
           </ul>

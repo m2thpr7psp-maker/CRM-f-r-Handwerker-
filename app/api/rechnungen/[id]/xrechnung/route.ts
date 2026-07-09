@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { ladeEinstellungen } from "@/lib/einstellungen";
-import { erzeugeRechnungsPdf } from "@/lib/pdf";
+import { erzeugeXRechnung, pruefeXRechnungsPflichtangaben } from "@/lib/xrechnung";
 import { istEntsperrt } from "@/lib/pin";
 
 export const dynamic = "force-dynamic";
@@ -29,12 +29,24 @@ export async function GET(
     return new Response("Rechnungsentwurf nicht gefunden", { status: 404 });
   }
 
-  const pdf = await erzeugeRechnungsPdf(rechnung, einstellungen);
+  const fehlend = pruefeXRechnungsPflichtangaben(rechnung, einstellungen);
+  if (fehlend.length > 0) {
+    const text =
+      "Für die XRechnung fehlen noch Pflichtangaben:\n\n- " +
+      fehlend.join("\n- ") +
+      "\n\nBitte ergänzen Sie die Angaben in den Einstellungen bzw. beim Kunden und versuchen Sie es erneut.";
+    return new Response(text, {
+      status: 422,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
+  }
 
-  return new Response(new Uint8Array(pdf), {
+  const xmlInhalt = erzeugeXRechnung(rechnung, einstellungen);
+
+  return new Response(xmlInhalt, {
     headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${rechnung.nummer}-Entwurf.pdf"`,
+      "Content-Type": "application/xml; charset=utf-8",
+      "Content-Disposition": `attachment; filename="${rechnung.nummer}-xrechnung.xml"`,
     },
   });
 }

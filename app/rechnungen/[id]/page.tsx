@@ -71,6 +71,7 @@ export default async function RechnungSeite({
           leistungBis: rechnung.leistungBis ? toDatumString(rechnung.leistungBis) : "",
           mwstSatz: rechnung.mwstSatz,
           zahlungszielTage: rechnung.zahlungszielTage,
+          kaeuferReferenz: rechnung.kaeuferReferenz ?? "",
         }}
         positionen={rechnung.positionen.map((p) => ({
           bezeichnung: p.bezeichnung,

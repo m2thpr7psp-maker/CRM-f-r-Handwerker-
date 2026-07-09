@@ -4,6 +4,7 @@ import { einstellungenSpeichern } from "@/app/actions/einstellungen";
 import { ladeEinstellungen } from "@/lib/einstellungen";
 import { formatDezimal } from "@/lib/geld";
 import { SeitenKopf, Karte, Feld, feldKlasse, SpeichernButton } from "@/components/ui";
+import { PinVerwaltung } from "@/components/pin-verwaltung";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +66,30 @@ export default async function EinstellungenSeite({
               />
             </Feld>
           </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Feld label="Telefon">
+              <input
+                name="telefon"
+                type="tel"
+                defaultValue={einstellungen.telefon}
+                placeholder="z. B. 0221 123456"
+                className={feldKlasse}
+              />
+            </Feld>
+            <Feld label="E-Mail">
+              <input
+                name="email"
+                type="email"
+                defaultValue={einstellungen.email}
+                placeholder="z. B. info@betrieb.de"
+                className={feldKlasse}
+              />
+            </Feld>
+          </div>
+          <p className="-mt-2 text-sm text-slate-500">
+            Telefon und E-Mail sind Pflichtangaben für die XRechnung (E-Rechnung).
+          </p>
 
           <h2 className="mt-2 text-lg font-bold">Steuern &amp; Bank</h2>
           <p className="-mt-2 text-sm text-slate-500">
@@ -132,6 +157,28 @@ export default async function EinstellungenSeite({
             <SpeichernButton />
           </div>
         </form>
+      </Karte>
+
+      <Karte className="mt-5 p-5 md:p-6">
+        <h2 className="mb-3 text-lg font-bold">Datensicherung</h2>
+        <p className="mb-4 text-sm text-slate-500">
+          Lädt eine Kopie der kompletten Datenbank herunter (Kunden, Aufträge, Termine,
+          Rechnungsentwürfe, Einstellungen). Bewahren Sie die Datei sicher auf – sie
+          enthält personenbezogene Daten Ihrer Kunden. Zum Wiederherstellen ersetzen Sie
+          die Datei <code className="rounded bg-slate-100 px-1">prisma/dev.db</code> bei
+          gestoppter App durch das Backup.
+        </p>
+        <a
+          href="/api/backup"
+          className="inline-flex min-h-12 items-center rounded-xl bg-orange-500 px-5 text-[15px] font-semibold text-white hover:bg-orange-600"
+        >
+          Backup herunterladen
+        </a>
+      </Karte>
+
+      <Karte className="mt-5 p-5 md:p-6">
+        <h2 className="mb-3 text-lg font-bold">PIN-Sperre</h2>
+        <PinVerwaltung pinAktiv={Boolean(einstellungen.pinHash)} />
       </Karte>
 
       <p className="mt-4 text-center text-sm text-slate-500">

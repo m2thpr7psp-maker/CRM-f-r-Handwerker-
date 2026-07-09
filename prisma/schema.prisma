@@ -63,6 +63,8 @@ model Rechnung {
   leistungBis      DateTime?
   mwstSatz         Float               @default(19)
   zahlungszielTage Int                 @default(14)
+  /// Leitweg-ID (Behörden) oder Bestell-/Referenznummer des Kunden (BT-10 in der XRechnung)
+  kaeuferReferenz  String?
   positionen       RechnungsPosition[]
 }
 
@@ -83,9 +85,13 @@ model Einstellungen {
   strasse      String  @default("")
   plz          String  @default("")
   ort          String  @default("")
+  telefon      String  @default("")
+  email        String  @default("")
   steuernummer String  @default("")
   ustIdNr      String  @default("")
   iban         String  @default("")
   logo         String?
   stundensatz  Float   @default(55)
+  pinHash      String?
+  pinSalz      String?
 }

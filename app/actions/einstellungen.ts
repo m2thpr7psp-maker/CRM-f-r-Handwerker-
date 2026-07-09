@@ -16,6 +16,8 @@ export async function einstellungenSpeichern(formData: FormData) {
     strasse: string;
     plz: string;
     ort: string;
+    telefon: string;
+    email: string;
     steuernummer: string;
     ustIdNr: string;
     iban: string;
@@ -26,6 +28,8 @@ export async function einstellungenSpeichern(formData: FormData) {
     strasse: text("strasse"),
     plz: text("plz"),
     ort: text("ort"),
+    telefon: text("telefon"),
+    email: text("email"),
     steuernummer: text("steuernummer"),
     ustIdNr: text("ustIdNr"),
     iban: text("iban"),

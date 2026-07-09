@@ -40,6 +40,7 @@ export function RechnungEditor({
   const [leistungBis, setLeistungBis] = useState(kopf.leistungBis);
   const [mwstSatz, setMwstSatz] = useState(kopf.mwstSatz);
   const [zahlungsziel, setZahlungsziel] = useState(String(kopf.zahlungszielTage));
+  const [kaeuferReferenz, setKaeuferReferenz] = useState(kopf.kaeuferReferenz);
 
   const [zeilen, setZeilen] = useState<PositionZeile[]>(
     positionen.map((p, i) => ({
@@ -106,6 +107,7 @@ export function RechnungEditor({
           leistungBis,
           mwstSatz,
           zahlungszielTage: Math.max(0, Number(zahlungsziel) || 0),
+          kaeuferReferenz,
         },
         eingaben
       );
@@ -174,6 +176,15 @@ export function RechnungEditor({
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <span className={labelKlasse}>Leitweg-ID / Referenz des Kunden</span>
+            <input
+              value={kaeuferReferenz}
+              onChange={(e) => setKaeuferReferenz(e.target.value)}
+              placeholder="Für Behörden: Leitweg-ID (Pflicht)"
+              className={feldKlasse}
+            />
           </div>
         </div>
       </div>
@@ -336,9 +347,17 @@ export function RechnungEditor({
         >
           PDF ansehen
         </a>
+        <a
+          href={`/api/rechnungen/${rechnungId}/xrechnung`}
+          className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 text-[15px] font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          XRechnung (XML)
+        </a>
       </div>
       <p className="-mt-2 text-sm text-slate-500">
-        Tipp: Erst speichern – das PDF zeigt immer den gespeicherten Stand.
+        Tipp: Erst speichern – PDF und XRechnung zeigen immer den gespeicherten Stand.
+        Die XRechnung-Datei können Sie in Ihre Buchhaltungssoftware übernehmen oder an
+        Behörden/Firmenkunden übermitteln; prüfen Sie sie vor dem Versand.
       </p>
     </div>
   );

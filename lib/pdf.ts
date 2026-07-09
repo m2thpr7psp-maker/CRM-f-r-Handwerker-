@@ -288,6 +288,8 @@ export function erzeugeRechnungsPdf(
     [einstellungen.strasse, [einstellungen.plz, einstellungen.ort].filter(Boolean).join(" ")]
       .filter(Boolean)
       .join(", "),
+    einstellungen.telefon ? `Tel. ${einstellungen.telefon}` : "",
+    einstellungen.email,
     einstellungen.steuernummer ? `Steuernummer: ${einstellungen.steuernummer}` : "",
     einstellungen.ustIdNr ? `USt-IdNr.: ${einstellungen.ustIdNr}` : "",
     einstellungen.iban ? `IBAN: ${einstellungen.iban}` : "",

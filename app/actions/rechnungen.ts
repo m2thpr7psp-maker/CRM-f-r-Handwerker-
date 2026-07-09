@@ -67,6 +67,7 @@ export type RechnungKopfEingabe = {
   leistungBis: string;
   mwstSatz: number;
   zahlungszielTage: number;
+  kaeuferReferenz: string;
 };
 
 export async function rechnungSpeichern(
@@ -104,6 +105,7 @@ export async function rechnungSpeichern(
         leistungBis: kopf.leistungBis ? parseDatum(kopf.leistungBis) : null,
         mwstSatz: kopf.mwstSatz,
         zahlungszielTage: kopf.zahlungszielTage,
+        kaeuferReferenz: kopf.kaeuferReferenz.trim() === "" ? null : kopf.kaeuferReferenz.trim(),
       },
     }),
     prisma.rechnungsPosition.deleteMany({ where: { rechnungId } }),

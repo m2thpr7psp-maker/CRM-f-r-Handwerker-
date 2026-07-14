@@ -237,19 +237,23 @@ export function erzeugeRechnungsPdf(
     y += fett ? 18 : 15;
   };
 
-  summenZeile(`Nettobetrag (Steuersatz ${menge(rechnung.mwstSatz)} %)`, euro(summen.netto));
-  summenZeile(`zzgl. ${menge(rechnung.mwstSatz)} % USt`, euro(summen.mwst));
-  summenZeile("Rechnungsbetrag (brutto)", euro(summen.brutto), true);
-
-  if (rechnung.mwstSatz === 0) {
+  if (rechnung.mwstSatz > 0) {
+    summenZeile(`Nettobetrag (Steuersatz ${menge(rechnung.mwstSatz)} %)`, euro(summen.netto));
+    summenZeile(`zzgl. ${menge(rechnung.mwstSatz)} % USt`, euro(summen.mwst));
+    summenZeile("Rechnungsbetrag (brutto)", euro(summen.brutto), true);
+  } else {
+    // Ohne Umsatzsteuer: keine USt-Zeile, dafür Pflichthinweis
+    summenZeile("Rechnungsbetrag", euro(summen.brutto), true);
     doc.font("Helvetica").fontSize(9).fillColor(grau);
     doc.text(
-      "Hinweis: Es wird keine Umsatzsteuer ausgewiesen (Steuersatz 0 %). Bitte prüfen Sie den zutreffenden Grund (z. B. Kleinunternehmerregelung § 19 UStG oder Steuerschuldnerschaft des Leistungsempfängers § 13b UStG).",
+      einstellungen.kleinunternehmer
+        ? "Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung)."
+        : "Hinweis: Es wird keine Umsatzsteuer ausgewiesen (Steuersatz 0 %). Bitte prüfen Sie den zutreffenden Grund (z. B. Kleinunternehmerregelung § 19 UStG oder Steuerschuldnerschaft des Leistungsempfängers § 13b UStG).",
       SEITENRAND,
       y,
       { width: INHALT_BREITE }
     );
-    y += 30;
+    y += einstellungen.kleinunternehmer ? 18 : 30;
   }
 
   // Zahlungsinformationen

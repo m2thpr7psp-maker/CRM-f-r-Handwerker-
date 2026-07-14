@@ -21,6 +21,7 @@ export async function einstellungenSpeichern(formData: FormData) {
     steuernummer: string;
     ustIdNr: string;
     iban: string;
+    kleinunternehmer: boolean;
     stundensatz?: number;
     logo?: string | null;
   } = {
@@ -33,6 +34,7 @@ export async function einstellungenSpeichern(formData: FormData) {
     steuernummer: text("steuernummer"),
     ustIdNr: text("ustIdNr"),
     iban: text("iban"),
+    kleinunternehmer: formData.get("kleinunternehmer") === "1",
   };
   if (!Number.isNaN(stundensatzEingabe) && stundensatzEingabe >= 0) {
     daten.stundensatz = stundensatzEingabe;

@@ -83,7 +83,9 @@ export function erzeugeXRechnung(
   const steuerBefreiungsGrund =
     rechnung.mwstSatz > 0
       ? ""
-      : "Steuerbefreit – Grund bitte prüfen (z. B. Kleinunternehmerregelung nach § 19 UStG)";
+      : einstellungen.kleinunternehmer
+        ? "Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung)."
+        : "Steuerbefreit – Grund bitte prüfen (z. B. Kleinunternehmerregelung nach § 19 UStG)";
 
   // BT-10 ist in der XRechnung Pflicht: Leitweg-ID/Referenz des Kunden,
   // ersatzweise die Rechnungsnummer

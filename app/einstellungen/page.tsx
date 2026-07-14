@@ -5,6 +5,7 @@ import { ladeEinstellungen } from "@/lib/einstellungen";
 import { formatDezimal } from "@/lib/geld";
 import { SeitenKopf, Karte, Feld, feldKlasse, SpeichernButton } from "@/components/ui";
 import { PinVerwaltung } from "@/components/pin-verwaltung";
+import { ibanGueltig } from "@/lib/validierung";
 
 export const dynamic = "force-dynamic";
 
@@ -119,6 +120,30 @@ export default async function EinstellungenSeite({
               className={feldKlasse}
             />
           </Feld>
+          {einstellungen.iban.trim() !== "" && !ibanGueltig(einstellungen.iban) && (
+            <p className="-mt-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
+              Die gespeicherte IBAN hat eine ungültige Prüfsumme – bitte auf
+              Tippfehler kontrollieren.
+            </p>
+          )}
+          <label className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <input
+              type="checkbox"
+              name="kleinunternehmer"
+              value="1"
+              defaultChecked={einstellungen.kleinunternehmer}
+              className="mt-0.5 h-5 w-5"
+            />
+            <span>
+              <span className="block text-[15px] font-semibold">
+                Kleinunternehmer nach § 19 UStG
+              </span>
+              <span className="block text-sm text-slate-500">
+                Neue Rechnungsentwürfe starten mit 0 % MwSt und erhalten den
+                Pflichthinweis „Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.“
+              </span>
+            </span>
+          </label>
 
           <h2 className="mt-2 text-lg font-bold">Rechnungen</h2>
           <Feld label="Standard-Stundensatz (netto, in Euro)">

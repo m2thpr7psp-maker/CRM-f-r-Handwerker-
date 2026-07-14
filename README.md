@@ -18,6 +18,8 @@
 | **Suche** | Eine Suche über Kunden und Aufträge |
 | **Datensicherung** | Komplettes Datenbank-Backup per Knopfdruck in den Einstellungen |
 | **PIN-Sperre** | Optionaler Geräteschutz (4–8 Ziffern) für Büro und Baustelle |
+| **Kleinunternehmer** | § 19 UStG-Modus: 0 % MwSt als Standard, Pflichthinweis auf PDF und XRechnung |
+| **DSGVO** | Datenauskunft nach Art. 15 DSGVO als PDF direkt von der Kundenseite |
 
 ## Installation
 
@@ -76,6 +78,8 @@ HandwerkOS exportiert Rechnungsentwürfe als **XRechnung** (UBL-Syntax, Profil X
 
 - **Lokale Datenhaltung:** Alle Daten bleiben in einer SQLite-Datei (`prisma/dev.db`) auf Ihrem Rechner. Keine Cloud, keine Telemetrie, keine Übermittlung an Dritte – das minimiert DSGVO-Risiken (keine Auftragsverarbeiter nötig).
 - **Personenbezogene Daten:** Die App speichert Kundendaten (Name, Adresse, Telefon, E-Mail, Notizen). Der Betrieb ist dafür Verantwortlicher im Sinne der DSGVO. Tragen Sie in das Notizfeld nur, was Sie auch dem Kunden zeigen könnten (Auskunftsrecht nach Art. 15 DSGVO).
+- **Datenauskunft:** Auf jeder Kundenseite erzeugt **„Datenauskunft (DSGVO)“** ein PDF mit allen zu dieser Person gespeicherten Daten (Stammdaten, Aufträge, Termine, Rechnungsentwürfe) – zum Aushändigen, wenn ein Kunde nach Art. 15 DSGVO anfragt.
+- **Kleinunternehmer:** In den Einstellungen aktivierbar (§ 19 UStG). Neue Rechnungsentwürfe starten dann mit 0 % MwSt, und PDF wie XRechnung enthalten den Pflichthinweis „Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.“
 - **Löschen:** Kunde löschen entfernt dauerhaft alle zugehörigen Aufträge, Termine und Rechnungsentwürfe (Art. 17 DSGVO). Achtung: Bereits gestellte Rechnungen unterliegen der steuerlichen **Aufbewahrungspflicht (8 Jahre, § 147 AO)** – bewahren Sie endgültige Rechnungen in Ihrer Buchhaltung auf, bevor Sie hier löschen.
 - **Backups:** Das Backup enthält alle personenbezogenen Daten. Sicher aufbewahren (verschlüsselter USB-Stick, verschlüsselte Festplatte), alte Backups löschen.
 - **PIN-Sperre:** Schützt vor neugierigen Blicken auf offenen Geräten. Sie ersetzt **keine** Festplatten-Verschlüsselung (BitLocker/FileVault aktivieren!) und keine Benutzerkonten.

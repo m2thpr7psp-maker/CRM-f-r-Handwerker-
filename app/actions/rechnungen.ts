@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { ladeEinstellungen } from "@/lib/einstellungen";
 import { heuteDatum, parseDatum } from "@/lib/format";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -24,10 +25,13 @@ async function naechsteRechnungsnummer(
 
 /** Erzeugt mit einem Klick einen Rechnungsentwurf aus einem Auftrag */
 export async function rechnungAusAuftragErzeugen(auftragId: string) {
-  const auftrag = await prisma.auftrag.findUnique({
-    where: { id: auftragId },
-    include: { termine: { orderBy: { datum: "asc" } } },
-  });
+  const [auftrag, einstellungen] = await Promise.all([
+    prisma.auftrag.findUnique({
+      where: { id: auftragId },
+      include: { termine: { orderBy: { datum: "asc" } } },
+    }),
+    ladeEinstellungen(),
+  ]);
   if (!auftrag) return;
 
   const heute = heuteDatum();
@@ -43,7 +47,8 @@ export async function rechnungAusAuftragErzeugen(auftragId: string) {
         datum: heute,
         leistungVon,
         leistungBis,
-        mwstSatz: 19,
+        // Kleinunternehmer (§ 19 UStG) weisen keine Umsatzsteuer aus
+        mwstSatz: einstellungen.kleinunternehmer ? 0 : 19,
         zahlungszielTage: 14,
       },
     });

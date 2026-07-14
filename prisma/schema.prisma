@@ -92,6 +92,8 @@ model Einstellungen {
   iban         String  @default("")
   logo         String?
   stundensatz  Float   @default(55)
+  /// Kleinunternehmerregelung nach § 19 UStG: keine Umsatzsteuer ausweisen
+  kleinunternehmer Boolean @default(false)
   pinHash      String?
   pinSalz      String?
 }

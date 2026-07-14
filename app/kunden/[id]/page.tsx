@@ -126,7 +126,15 @@ export default async function KundeDetailSeite({
           )}
         </section>
 
-        <div className="mt-2">
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <a
+            href={`/api/kunden/${kunde.id}/datenauskunft`}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex min-h-12 items-center rounded-xl border border-slate-300 bg-white px-5 text-[15px] font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            Datenauskunft (DSGVO)
+          </a>
           <LoeschenButton
             aktion={kundeLoeschen.bind(null, kunde.id)}
             frage="Kunden mit allen Aufträgen und Terminen endgültig löschen?"

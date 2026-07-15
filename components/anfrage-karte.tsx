@@ -159,6 +159,30 @@ export function AnfrageKarte({ anfrage }: { anfrage: AnfrageDaten }) {
             </p>
           )}
 
+          {anfrage.status === "BESTAETIGT" && (
+            <button
+              type="button"
+              disabled={laufend}
+              onClick={() =>
+                startTransition(async () => {
+                  setFehler(null);
+                  const antwort = await fetch(`/api/anfragen/${anfrage.id}/uebernehmen`, {
+                    method: "PATCH",
+                  });
+                  const daten = await antwort.json().catch(() => null);
+                  if (!antwort.ok) {
+                    setFehler(daten?.fehler ?? "Übernahme fehlgeschlagen.");
+                    return;
+                  }
+                  router.push(`/auftraege/${daten.auftragId}`);
+                })
+              }
+              className="mb-3 min-h-12 w-full rounded-xl bg-orange-500 px-4 text-[15px] font-bold text-white hover:bg-orange-600 disabled:opacity-60"
+            >
+              In Aufträge &amp; Kalender übernehmen
+            </button>
+          )}
+
           {offeneAnfrage && modus === "slots" && (
             <div className="flex flex-col gap-2">
               {anfrage.slots

@@ -96,6 +96,10 @@ Voice-Konfiguration (Vapi) erfolgt separat und ruft nur den Webhook auf.
    Kurzbegründung, die dem Kunden gesendet wird).
 4. Der Kunde bekommt automatisch die finale Terminbestätigung mit
    Zusammenfassung sowie eine Erinnerung 24 Stunden vor dem Termin.
+5. Optional: **„In Aufträge & Kalender übernehmen“** macht aus der
+   bestätigten Anfrage einen Kunden (per Rufnummer wiedererkannt), einen
+   Auftrag (Status „Geplant“) und einen Kalendertermin – die Anfrage gilt
+   dann als erledigt.
 
 **Einrichtung:**
 

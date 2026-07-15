@@ -8,12 +8,14 @@ import {
   IconPersonen,
   IconRechnung,
   IconSuche,
+  IconTelefon,
   IconWerkzeug,
   IconZahnrad,
 } from "@/components/icons";
 
 const eintraege = [
   { href: "/", label: "Start", icon: IconHaus },
+  { href: "/anfragen", label: "Anfragen", icon: IconTelefon },
   { href: "/suche", label: "Suche", icon: IconSuche },
   { href: "/kalender", label: "Kalender", icon: IconKalender },
   { href: "/auftraege", label: "Aufträge", icon: IconWerkzeug },
@@ -24,15 +26,32 @@ const eintraege = [
 ];
 
 // Auf dem Smartphone passen 5 Einträge in die untere Leiste; Suche,
-// Mitarbeiter und Einstellungen sind dort über das Dashboard erreichbar.
-const mobilEintraege = [eintraege[0], eintraege[2], eintraege[3], eintraege[4], eintraege[5]];
+// Rechnungen, Mitarbeiter und Einstellungen sind über das Dashboard
+// bzw. die Auftragsseiten erreichbar.
+const mobilLabels = ["Start", "Anfragen", "Kalender", "Aufträge", "Kunden"];
+const mobilEintraege = eintraege.filter((e) => mobilLabels.includes(e.label));
 
 function istAktiv(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-export function Navigation() {
+function AnfragenBadge({ anzahl, klein = false }: { anzahl: number; klein?: boolean }) {
+  if (anzahl === 0) return null;
+  return (
+    <span
+      className={`inline-flex items-center justify-center rounded-full bg-red-600 font-bold text-white ${
+        klein
+          ? "absolute -right-2.5 -top-1 h-4 min-w-4 px-1 text-[10px]"
+          : "ml-auto h-6 min-w-6 px-1.5 text-xs"
+      }`}
+    >
+      {anzahl}
+    </span>
+  );
+}
+
+export function Navigation({ anfragenNeu = 0 }: { anfragenNeu?: number }) {
   const pathname = usePathname();
 
   return (
@@ -60,6 +79,7 @@ export function Navigation() {
               >
                 <e.icon className="h-5 w-5" />
                 {e.label}
+                {e.label === "Anfragen" && <AnfragenBadge anzahl={anfragenNeu} />}
               </Link>
             );
           })}
@@ -79,7 +99,10 @@ export function Navigation() {
                   aktiv ? "text-orange-600" : "text-slate-500"
                 }`}
               >
-                <e.icon className="h-6 w-6" />
+                <span className="relative">
+                  <e.icon className="h-6 w-6" />
+                  {e.label === "Anfragen" && <AnfragenBadge anzahl={anfragenNeu} klein />}
+                </span>
                 {e.label}
               </Link>
             );

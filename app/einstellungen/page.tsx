@@ -185,6 +185,20 @@ export default async function EinstellungenSeite({
       </Karte>
 
       <Karte className="mt-5 p-5 md:p-6">
+        <h2 className="mb-3 text-lg font-bold">Terminanfragen (Fritz)</h2>
+        <p className="mb-4 text-sm text-slate-500">
+          Zeitfenster, in denen Ihr Betrieb Termine annimmt – daraus entstehen
+          die Slot-Vorschläge für neue Anfragen.
+        </p>
+        <Link
+          href="/einstellungen/verfuegbarkeit"
+          className="inline-flex min-h-12 items-center rounded-xl border border-slate-300 bg-white px-5 text-[15px] font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          Verfügbarkeit pflegen
+        </Link>
+      </Karte>
+
+      <Karte className="mt-5 p-5 md:p-6">
         <h2 className="mb-3 text-lg font-bold">Datensicherung</h2>
         <p className="mb-4 text-sm text-slate-500">
           Lädt eine Kopie der kompletten Datenbank herunter (Kunden, Aufträge, Termine,

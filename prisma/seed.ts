@@ -11,6 +11,8 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log("Lösche vorhandene Daten …");
+  await prisma.terminAnfrage.deleteMany({});
+  await prisma.verfuegbarkeitsFenster.deleteMany({});
   await prisma.kunde.deleteMany({});
   await prisma.mitarbeiter.deleteMany({});
 
@@ -327,7 +329,195 @@ async function main() {
     },
   });
 
-  console.log("Fertig! Demo-Daten: 8 Kunden, 12 Aufträge, 20 Termine, 3 Mitarbeiter, 2 Rechnungsentwürfe.");
+  console.log("Lege Verfügbarkeitsfenster an (Mo–Fr 8–12 und 13–17 Uhr) …");
+  for (let wochentag = 0; wochentag <= 4; wochentag++) {
+    await prisma.verfuegbarkeitsFenster.create({ data: { wochentag, von: "08:00", bis: "12:00" } });
+    await prisma.verfuegbarkeitsFenster.create({ data: { wochentag, von: "13:00", bis: "17:00" } });
+  }
+
+  console.log("Lege 5 Terminanfragen an (alle Status) …");
+  const inTagen = (offset: number) => addTage(heute, offset);
+
+  // 1) NEU – Notfall, frisch per Telefon eingegangen
+  await prisma.terminAnfrage.create({
+    data: {
+      kundeName: "Renate Winter",
+      telefon: "+49 171 5550101",
+      adresse: "Severinstraße 88, 50678 Köln",
+      anliegen: "Wasserfleck an der Wohnzimmerdecke nach Rohrbruch – Decke muss isoliert und gestrichen werden",
+      dringlichkeit: "NOTFALL",
+      wunschZeitraum: "so schnell wie möglich",
+      quelle: "TELEFON",
+      status: "NEU",
+      slots: {
+        create: [
+          { datum: inTagen(0), uhrzeitVon: "13:00", uhrzeitBis: "17:00" },
+          { datum: inTagen(1), uhrzeitVon: "08:00", uhrzeitBis: "12:00" },
+          { datum: inTagen(1), uhrzeitVon: "13:00", uhrzeitBis: "17:00" },
+        ],
+      },
+      nachrichten: {
+        create: [
+          {
+            typ: "EINGANG_BESTAETIGT",
+            kanal: "SMS",
+            telefon: "+49 171 5550101",
+            inhalt: "Guten Tag Renate Winter, Ihre Anfrage (Wasserfleck an der Wohnzimmerdecke) ist bei Malerbetrieb Farbenfroh GmbH eingegangen. Sie erhalten bis heute 18 Uhr einen Terminvorschlag.",
+            status: "GESENDET",
+            gesendetAt: new Date(),
+          },
+        ],
+      },
+    },
+  });
+
+  // 2) ERLEDIGT – Termin hat bereits stattgefunden
+  await prisma.terminAnfrage.create({
+    data: {
+      kundeName: "Markus Tholen",
+      telefon: "+49 160 5550202",
+      adresse: "Eichenweg 4, 50859 Köln",
+      anliegen: "Carport und Gartenzaun neu lasieren, ca. 25 m",
+      dringlichkeit: "NORMAL",
+      wunschZeitraum: "vormittags",
+      quelle: "WEB",
+      status: "ERLEDIGT",
+      createdAt: addTage(heute, -8),
+      slots: {
+        create: [
+          { datum: inTagen(-5), uhrzeitVon: "08:00", uhrzeitBis: "12:00", status: "GEWAEHLT" },
+        ],
+      },
+      nachrichten: {
+        create: [
+          {
+            typ: "EINGANG_BESTAETIGT",
+            kanal: "SMS",
+            telefon: "+49 160 5550202",
+            inhalt: "Guten Tag Markus Tholen, Ihre Anfrage (Carport und Gartenzaun lasieren) ist bei Malerbetrieb Farbenfroh GmbH eingegangen. Sie erhalten bis morgen 18 Uhr einen Terminvorschlag.",
+            status: "GESENDET",
+            gesendetAt: addTage(heute, -8),
+          },
+          {
+            typ: "TERMIN_BESTAETIGT",
+            kanal: "SMS",
+            telefon: "+49 160 5550202",
+            inhalt: "Ihr Termin mit Malerbetrieb Farbenfroh GmbH: vor 5 Tagen um 08:00 Uhr. Besprochen: Carport und Gartenzaun neu lasieren. Bei Fragen antworten Sie einfach auf diese Nachricht.",
+            status: "GESENDET",
+            gesendetAt: addTage(heute, -7),
+          },
+          {
+            typ: "ERINNERUNG",
+            kanal: "SMS",
+            telefon: "+49 160 5550202",
+            inhalt: "Erinnerung: Morgen um 08:00 Uhr kommt Malerbetrieb Farbenfroh GmbH zu Ihnen (Carport und Gartenzaun lasieren).",
+            status: "GESENDET",
+            gesendetAt: addTage(heute, -6),
+            faelligAt: addTage(heute, -6),
+          },
+        ],
+      },
+    },
+  });
+
+  // 3) VORGESCHLAGEN – dringend, Chef hat neuen Zeitraum angeboten
+  await prisma.terminAnfrage.create({
+    data: {
+      kundeName: "Bäckerei Krumm",
+      telefon: "+49 221 5550303",
+      adresse: "Marktgasse 2, 50667 Köln",
+      anliegen: "Verkaufsraum über Nacht streichen – Wände fleckig, Gesundheitsamt-Begehung steht an",
+      dringlichkeit: "DRINGEND",
+      wunschZeitraum: "abends nach Ladenschluss",
+      quelle: "TELEFON",
+      status: "VORGESCHLAGEN",
+      slots: {
+        create: [
+          { datum: inTagen(2), uhrzeitVon: "13:00", uhrzeitBis: "17:00" },
+          { datum: inTagen(4), uhrzeitVon: "13:00", uhrzeitBis: "17:00" },
+        ],
+      },
+    },
+  });
+
+  // 4) BESTAETIGT – Termin steht, Erinnerung ist geplant
+  await prisma.terminAnfrage.create({
+    data: {
+      kundeName: "Herbert Klein",
+      telefon: "0170 2223344",
+      adresse: "Lindenstraße 8, 50674 Köln",
+      anliegen: "Kellerflur weißen, ca. 20 m²",
+      dringlichkeit: "NORMAL",
+      wunschZeitraum: "nachmittags",
+      quelle: "TELEFON",
+      status: "BESTAETIGT",
+      kundeId: klein.id,
+      slots: {
+        create: [
+          { datum: inTagen(2), uhrzeitVon: "13:00", uhrzeitBis: "17:00", status: "GEWAEHLT" },
+          { datum: inTagen(3), uhrzeitVon: "13:00", uhrzeitBis: "17:00", status: "VERWORFEN" },
+        ],
+      },
+      nachrichten: {
+        create: [
+          {
+            typ: "EINGANG_BESTAETIGT",
+            kanal: "SMS",
+            telefon: "0170 2223344",
+            inhalt: "Guten Tag Herbert Klein, Ihre Anfrage (Kellerflur weißen) ist bei Malerbetrieb Farbenfroh GmbH eingegangen. Sie erhalten bis morgen 18 Uhr einen Terminvorschlag.",
+            status: "GESENDET",
+            gesendetAt: addTage(heute, -1),
+          },
+          {
+            typ: "TERMIN_BESTAETIGT",
+            kanal: "SMS",
+            telefon: "0170 2223344",
+            inhalt: "Ihr Termin mit Malerbetrieb Farbenfroh GmbH: in 2 Tagen um 13:00 Uhr. Besprochen: Kellerflur weißen, ca. 20 m². Bei Fragen antworten Sie einfach auf diese Nachricht.",
+            status: "GESENDET",
+            gesendetAt: new Date(),
+          },
+          {
+            typ: "ERINNERUNG",
+            kanal: "SMS",
+            telefon: "0170 2223344",
+            inhalt: "Erinnerung: Morgen um 13:00 Uhr kommt Malerbetrieb Farbenfroh GmbH zu Ihnen (Kellerflur weißen).",
+            status: "GEPLANT",
+            faelligAt: inTagen(1),
+          },
+        ],
+      },
+    },
+  });
+
+  // 5) ABGELEHNT – mit Absage-Nachricht an den Kunden
+  await prisma.terminAnfrage.create({
+    data: {
+      kundeName: "Volker Brandstätter",
+      telefon: "+49 152 5550505",
+      adresse: "Industriestraße 11, 51103 Köln",
+      anliegen: "Lagerhalle 800 m² komplett streichen inkl. Hallendecke",
+      dringlichkeit: "NORMAL",
+      wunschZeitraum: "kommende zwei Wochen",
+      quelle: "MANUELL",
+      status: "ABGELEHNT",
+      nachrichten: {
+        create: [
+          {
+            typ: "ABSAGE",
+            kanal: "SMS",
+            telefon: "+49 152 5550505",
+            inhalt: "Guten Tag Volker Brandstätter, Malerbetrieb Farbenfroh GmbH kann Ihre Anfrage leider nicht übernehmen. Grund: Für Industriehallen dieser Größe fehlt uns die Hebebühnen-Ausrüstung – wir empfehlen einen Industriemaler.",
+            status: "GESENDET",
+            gesendetAt: new Date(),
+          },
+        ],
+      },
+    },
+  });
+
+  console.log(
+    "Fertig! Demo-Daten: 8 Kunden, 12 Aufträge, 20 Termine, 3 Mitarbeiter, 2 Rechnungsentwürfe, 5 Terminanfragen, 10 Verfügbarkeitsfenster."
+  );
 }
 
 main()

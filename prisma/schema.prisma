@@ -19,6 +19,58 @@ model Kunde {
   notizen    String?
   erstelltAm DateTime  @default(now())
   auftraege  Auftrag[]
+  anfragen   TerminAnfrage[]
+}
+
+/// Fritz: telefonisch (oder manuell/web) erfasste Terminanfrage
+model TerminAnfrage {
+  id             String       @id @default(cuid())
+  kundeName      String
+  telefon        String
+  adresse        String?
+  anliegen       String
+  dringlichkeit  String       @default("NORMAL") // NOTFALL | DRINGEND | NORMAL
+  wunschZeitraum String?
+  quelle         String       @default("TELEFON") // TELEFON | WEB | MANUELL
+  status         String       @default("NEU") // NEU | VORGESCHLAGEN | BESTAETIGT | ABGELEHNT | ERLEDIGT
+  createdAt      DateTime     @default(now())
+  kundeId        String?
+  kunde          Kunde?       @relation(fields: [kundeId], references: [id], onDelete: SetNull)
+  slots          TerminSlot[]
+  nachrichten    Nachricht[]
+}
+
+model TerminSlot {
+  id         String        @id @default(cuid())
+  anfrageId  String
+  anfrage    TerminAnfrage @relation(fields: [anfrageId], references: [id], onDelete: Cascade)
+  datum      DateTime
+  uhrzeitVon String
+  uhrzeitBis String
+  status     String        @default("VORGESCHLAGEN") // VORGESCHLAGEN | GEWAEHLT | VERWORFEN
+}
+
+/// Zeitfenster, in denen der Betrieb grundsätzlich Termine annimmt.
+/// wochentag: 0 = Montag … 6 = Sonntag
+model VerfuegbarkeitsFenster {
+  id        String  @id @default(cuid())
+  wochentag Int
+  von       String
+  bis       String
+  aktiv     Boolean @default(true)
+}
+
+model Nachricht {
+  id         String        @id @default(cuid())
+  anfrageId  String
+  anfrage    TerminAnfrage @relation(fields: [anfrageId], references: [id], onDelete: Cascade)
+  kanal      String        @default("SMS") // SMS | WHATSAPP
+  typ        String // EINGANG_BESTAETIGT | TERMIN_BESTAETIGT | ERINNERUNG | ABSAGE
+  inhalt     String
+  telefon    String
+  faelligAt  DateTime      @default(now())
+  gesendetAt DateTime?
+  status     String        @default("GEPLANT") // GEPLANT | GESENDET | FEHLER
 }
 
 model Auftrag {

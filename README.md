@@ -20,6 +20,7 @@
 | **PIN-Sperre** | Optionaler Geräteschutz (4–8 Ziffern) für Büro und Baustelle |
 | **Kleinunternehmer** | § 19 UStG-Modus: 0 % MwSt als Standard, Pflichthinweis auf PDF und XRechnung |
 | **DSGVO** | Datenauskunft nach Art. 15 DSGVO als PDF direkt von der Kundenseite |
+| **Terminanfragen (Fritz)** | Telefonassistent-Anbindung: Anfragen laufen ein, der Chef bestätigt Termine mit einem Tipp, Kunden erhalten automatische SMS-Bestätigungen |
 
 ## Installation
 
@@ -73,6 +74,53 @@ HandwerkOS exportiert Rechnungsentwürfe als **XRechnung** (UBL-Syntax, Profil X
 - Für Behörden das Feld **„Leitweg-ID / Referenz des Kunden“** auf der Rechnung ausfüllen.
 - **Wichtig:** HandwerkOS bleibt ein Entwurfs-Werkzeug. Prüfen Sie die Datei vor dem Versand (z. B. mit dem KoSIT-Validator oder durch Import in Ihre Buchhaltungssoftware). Die rechtliche Verantwortung für die endgültige Rechnung liegt beim Betrieb.
 - **TODO:** ZUGFeRD (PDF mit eingebettetem XML) ist weiterhin nicht enthalten – es erfordert PDF/A-3 mit eingebetteten Schriften und spezieller XMP-Metadatenstruktur. Die XRechnung-XML-Datei deckt die E-Rechnungs-Anforderung ab, da beide Formate der EN 16931 entsprechen.
+
+## Terminanfragen-Modul (Fritz)
+
+Fritz ist der KI-Telefonassistent, der ans Telefon geht, wenn der Chef auf dem
+Gerüst steht. HandwerkOS enthält das komplette Anfrage-Backend – die
+Voice-Konfiguration (Vapi) erfolgt separat und ruft nur den Webhook auf.
+
+**Ablauf:**
+
+1. Ein Kunde ruft an. Der Voice-Agent erfasst Anliegen, Name, Adresse,
+   Rückrufnummer, Dringlichkeit und Wunschzeitraum und schickt alles per
+   `POST /api/anfragen` an HandwerkOS (auch manuell/über die Website nutzbar).
+2. Der Kunde erhält sofort eine SMS-Eingangsbestätigung mit Frist
+   („…meldet sich bis morgen 18 Uhr mit einem Terminvorschlag“) – so ruft er
+   nicht bei der Konkurrenz an.
+3. Der Chef sieht die Anfrage unter **Anfragen** (rotes Badge in der
+   Navigation): Anliegen, Adresse als Karten-Link, Dringlichkeit und 2–3
+   Slot-Vorschläge aus seinen Verfügbarkeitsfenstern. **Ein Tipp bestätigt
+   den Termin** – alternativ „Anderen Termin wählen“ oder „Ablehnen“ (mit
+   Kurzbegründung, die dem Kunden gesendet wird).
+4. Der Kunde bekommt automatisch die finale Terminbestätigung mit
+   Zusammenfassung sowie eine Erinnerung 24 Stunden vor dem Termin.
+
+**Einrichtung:**
+
+- Unter **Einstellungen → Verfügbarkeit** die Zeitfenster pflegen, in denen
+  der Betrieb Termine annimmt (daraus entstehen die Slot-Vorschläge;
+  bei Notfällen wird ab sofort gesucht, sonst ab morgen).
+- Geplante Nachrichten (z. B. Erinnerungen) versendet
+  `GET /api/cron/nachrichten` – regelmäßig aufrufen (Cronjob, Vercel Cron;
+  Beispielkonfiguration im Quelltext der Route). In v1 gibt es bewusst
+  keinen eingebauten Scheduler.
+- Versandfehler blockieren nie die Anfrage: Nachrichten mit Status FEHLER
+  bleiben in der Datenbank nachvollziehbar.
+
+**.env-Schlüssel** (siehe `.env.example`):
+
+| Schlüssel | Zweck |
+|---|---|
+| `NACHRICHTEN_PROVIDER` | `console` (Standard, loggt statt zu senden) oder `twilio` |
+| `TWILIO_SID`, `TWILIO_TOKEN`, `TWILIO_FROM` | Twilio-Zugangsdaten für echten SMS-Versand |
+| `ANFRAGEN_WEBHOOK_SECRET` | optional: sichert `POST /api/anfragen` ab (Header `x-webhook-secret`) |
+| `CRON_SECRET` | optional: sichert die Cron-Route ab (`Authorization: Bearer …`) |
+
+**Bewusst nicht in v1:** keine Direktbuchung durch Kunden (der Chef behält
+die Kontrolle), WhatsApp-Versand nur als vorbereiteter Stub (360dialog),
+keine Vapi-Konfiguration im Code.
 
 ## Datenschutz & Aufbewahrung (DSGVO/GoBD)
 

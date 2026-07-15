@@ -3,6 +3,7 @@ import "./globals.css";
 import { Navigation } from "@/components/navigation";
 import { Sperrbildschirm } from "@/components/sperrbildschirm";
 import { istEntsperrt } from "@/lib/pin";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "HandwerkOS",
@@ -24,13 +25,16 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const entsperrt = await istEntsperrt();
+  const anfragenNeu = entsperrt
+    ? await prisma.terminAnfrage.count({ where: { status: "NEU" } })
+    : 0;
 
   return (
     <html lang="de">
       <body className="min-h-screen antialiased">
         {entsperrt ? (
           <div className="flex min-h-screen">
-            <Navigation />
+            <Navigation anfragenNeu={anfragenNeu} />
             <main className="min-w-0 flex-1 pb-24 md:pb-8">
               <div className="mx-auto max-w-5xl px-4 py-5 md:px-8 md:py-8">
                 {children}

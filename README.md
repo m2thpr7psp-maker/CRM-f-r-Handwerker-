@@ -126,6 +126,11 @@ Voice-Konfiguration (Vapi) erfolgt separat und ruft nur den Webhook auf.
 die Kontrolle), WhatsApp-Versand nur als vorbereiteter Stub (360dialog),
 keine Vapi-Konfiguration im Code.
 
+**Voice-Agent anbinden:** Der Webhook versteht sowohl rohes JSON als auch
+den Vapi-Tool-Call-Umschlag (Antwort im `results`-Format). Kopierfertiger
+System-Prompt, Tool-Schema und Demo-Checkliste: `docs/vapi-einrichtung.md`.
+Protokoll zur Stimmenauswahl: `docs/stimmen-test.md`.
+
 ## Datenschutz & Aufbewahrung (DSGVO/GoBD)
 
 - **Lokale Datenhaltung:** Alle Daten bleiben in einer SQLite-Datei (`prisma/dev.db`) auf Ihrem Rechner. Keine Cloud, keine Telemetrie, keine Übermittlung an Dritte – das minimiert DSGVO-Risiken (keine Auftragsverarbeiter nötig).

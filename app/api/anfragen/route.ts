@@ -17,10 +17,57 @@ const anfrageSchema = z.object({
   quelle: z.enum(["TELEFON", "WEB", "MANUELL"]).default("TELEFON"),
 });
 
+type AnfrageEingabe = z.infer<typeof anfrageSchema>;
+
+/**
+ * Vapi verpackt Tool-Aufrufe in einen eigenen Umschlag:
+ *   { "message": { "type": "tool-calls", "toolCallList": [{ "id", "name", "arguments" }] } }
+ * und erwartet als Antwort { "results": [{ "toolCallId", "result" }] }.
+ * Diese Funktion erkennt den Umschlag und liefert die Argumente des
+ * ersten Tool-Aufrufs, sonst null (dann gilt der Body als rohes JSON).
+ */
+function entpackeVapiToolCall(daten: unknown): { toolCallId: string; argumente: unknown } | null {
+  if (typeof daten !== "object" || daten === null || !("message" in daten)) return null;
+  const message = (daten as { message: unknown }).message;
+  if (typeof message !== "object" || message === null) return null;
+  const m = message as {
+    type?: string;
+    toolCallList?: { id?: string; arguments?: unknown }[];
+    toolCalls?: { id?: string; function?: { arguments?: unknown } }[];
+  };
+  if (m.type !== "tool-calls") return null;
+
+  const eintrag = m.toolCallList?.[0];
+  if (eintrag) {
+    return { toolCallId: eintrag.id ?? "unbekannt", argumente: parseArgumente(eintrag.arguments) };
+  }
+  const aufruf = m.toolCalls?.[0];
+  if (aufruf) {
+    return {
+      toolCallId: aufruf.id ?? "unbekannt",
+      argumente: parseArgumente(aufruf.function?.arguments),
+    };
+  }
+  return null;
+}
+
+function parseArgumente(argumente: unknown): unknown {
+  if (typeof argumente !== "string") return argumente;
+  try {
+    return JSON.parse(argumente);
+  } catch {
+    return argumente;
+  }
+}
+
 /**
  * Neue Terminanfrage – Webhook-Ziel für den Voice-Agenten (Vapi),
  * auch manuell nutzbar. Erzeugt automatisch die Eingangsbestätigung
  * an den Kunden und 2–3 Slot-Vorschläge für den Chef.
+ *
+ * Akzeptiert zwei Formate:
+ * 1. Rohes JSON mit den Anfrage-Feldern (manuell, Website, Make.com …)
+ * 2. Vapi-Tool-Call-Umschlag (Antwort dann im Vapi-"results"-Format)
  *
  * Optional absicherbar: Ist ANFRAGEN_WEBHOOK_SECRET gesetzt, muss der
  * Aufrufer den Header "x-webhook-secret" mit diesem Wert mitschicken.
@@ -38,6 +85,34 @@ export async function POST(anfrage: Request) {
     return Response.json({ fehler: "Ungültiges JSON." }, { status: 400 });
   }
 
+  // Vapi-Umschlag? Dann Argumente entpacken und im Vapi-Format antworten.
+  const toolCall = entpackeVapiToolCall(daten);
+  if (toolCall) {
+    const ergebnis = anfrageSchema.safeParse(toolCall.argumente);
+    if (!ergebnis.success) {
+      const fehlend = ergebnis.error.issues
+        .map((i) => `${i.path.join(".")}: ${i.message}`)
+        .join("; ");
+      return Response.json({
+        results: [
+          {
+            toolCallId: toolCall.toolCallId,
+            result: `Fehler: Anfrage unvollständig (${fehlend}). Bitte fehlende Angaben beim Anrufer erfragen und erneut senden.`,
+          },
+        ],
+      });
+    }
+    const angelegt = await verarbeiteAnfrage(ergebnis.data);
+    return Response.json({
+      results: [
+        {
+          toolCallId: toolCall.toolCallId,
+          result: `Anfrage erfasst (${angelegt.slotAnzahl} Terminvorschläge für den Chef). Der Kunde erhält eine SMS-Eingangsbestätigung.`,
+        },
+      ],
+    });
+  }
+
   const ergebnis = anfrageSchema.safeParse(daten);
   if (!ergebnis.success) {
     return Response.json(
@@ -50,7 +125,17 @@ export async function POST(anfrage: Request) {
   }
   const eingabe = ergebnis.data;
 
-  // Slot-Vorschläge berechnen und Anfrage anlegen
+  const angelegt = await verarbeiteAnfrage(eingabe);
+  return Response.json(
+    { id: angelegt.id, status: "NEU", slotVorschlaege: angelegt.slotAnzahl },
+    { status: 201 }
+  );
+}
+
+/** Legt die Anfrage mit Slot-Vorschlägen an und verschickt die Eingangsbestätigung. */
+async function verarbeiteAnfrage(
+  eingabe: AnfrageEingabe
+): Promise<{ id: string; slotAnzahl: number }> {
   const vorschlaege = await schlageSlotsVor(eingabe.dringlichkeit);
   const terminAnfrage = await prisma.terminAnfrage.create({
     data: {
@@ -87,14 +172,7 @@ export async function POST(anfrage: Request) {
     }),
   });
 
-  return Response.json(
-    {
-      id: terminAnfrage.id,
-      status: terminAnfrage.status,
-      slotVorschlaege: terminAnfrage.slots.length,
-    },
-    { status: 201 }
-  );
+  return { id: terminAnfrage.id, slotAnzahl: terminAnfrage.slots.length };
 }
 
 /** Anfragen auflisten, optional gefiltert: /api/anfragen?status=NEU */
